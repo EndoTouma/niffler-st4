@@ -34,7 +34,7 @@ public class SpendingTest {
             currency = CurrencyValues.RUB
     )
     @Test
-    @DisplayName("Выбранная трата должна быть удалена при нажатии кнопки [Delete selected]")
+    @DisplayName("Выбранная трата должна быть удалена при нажатии кнопки 'Delete selected'")
     void spendingShouldBeDeletedByButtonDeleteSpending(SpendJson spend) {
 
         Selenide.open("http://127.0.0.1:3000");
