@@ -2,53 +2,51 @@ package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
-import guru.qa.niffler.jupiter.GenerateSpend;
+import guru.qa.niffler.jupiter.annotation.GenerateCategory;
+import guru.qa.niffler.jupiter.annotation.GenerateSpend;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
-import org.junit.jupiter.api.BeforeEach;
+import guru.qa.niffler.page.LoginPage;
+import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.page.WelcomePage;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selectors.byText;
-import static com.codeborne.selenide.Selenide.$;
 
 public class SpendingTest {
 
-  static {
-    Configuration.browserSize = "1980x1024";
-  }
+    static {
+        Configuration.browserSize = "1980x1024";
+    }
 
-  @BeforeEach
-  void doLogin() {
-    Selenide.open("http://127.0.0.1:3000/main");
-    $("a[href*='redirect']").click();
-    $("input[name='username']").setValue("duck");
-    $("input[name='password']").setValue("12345");
-    $("button[type='submit']").click();
-  }
+    private final WelcomePage welcomePage = new WelcomePage();
 
-  @GenerateSpend(
-      username = "duck",
-      description = "QA.GURU Advanced 4",
-      amount = 72500.00,
-      category = "Обучение",
-      currency = CurrencyValues.RUB
-  )
-  @Test
-  void spendingShouldBeDeletedByButtonDeleteSpending(SpendJson spend) {
-    $(".spendings-table tbody")
-        .$$("tr")
-        .find(text(spend.description()))
-        .$$("td")
-        .first()
-        .click();
+    private final LoginPage loginPage = new LoginPage();
 
-    $(byText("Delete selected"))
-        .click();
+    private final MainPage mainPage = new MainPage();
 
-    $(".spendings-table tbody")
-        .$$("tr")
-        .shouldHave(size(0));
-  }
+    @GenerateCategory(
+            username = "duck",
+            category = "Обучение"
+    )
+    @GenerateSpend(
+            description = "QA.GURU Advanced 4",
+            amount = 72500.00,
+            currency = CurrencyValues.RUB
+    )
+    @Test
+    @DisplayName("Выбранная трата должна быть удалена при нажатии кнопки [Delete selected]")
+    void spendingShouldBeDeletedByButtonDeleteSpending(SpendJson spend) {
+
+        Selenide.open("http://127.0.0.1:3000");
+        welcomePage
+                .clickLoginButton();
+        loginPage
+                .fillUserName("duck")
+                .fillPassword("12345")
+                .clickSignInButton();
+        mainPage
+                .selectSpendingByDescription(spend.description())
+                .clickDeleteSelectedButton()
+                .checkSpendingsTableIsEmpty();
+    }
 }
